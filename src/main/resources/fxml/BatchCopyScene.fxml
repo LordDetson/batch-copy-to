@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="900.0" style="-fx-background-color: #fafafa;" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="by.babanin.batchcopyto.gui.BatchCopyController">
+   <children>
+      <AnchorPane prefHeight="140.0" prefWidth="900.0" style="-fx-background-color: #2e3348;">
+         <children>
+            <Label layoutX="233.0" layoutY="34.0" text="Batch copy tool" textFill="#fafafa">
+               <font>
+                  <Font name="Georgia" size="64.0" />
+               </font>
+            </Label>
+         </children>
+      </AnchorPane>
+      <Label layoutX="113.0" layoutY="149.0" text="From:">
+         <font>
+            <Font size="24.0" />
+         </font>
+      </Label>
+      <Label layoutX="113.0" layoutY="198.0" text="To:">
+         <font>
+            <Font size="24.0" />
+         </font>
+      </Label>
+      <Label layoutX="113.0" layoutY="244.0" text="File list:">
+         <font>
+            <Font size="24.0" />
+         </font>
+      </Label>
+      <TextField fx:id="sourceDirectoryField" layoutX="234.0" layoutY="151.0" prefHeight="31.0" prefWidth="521.0" />
+      <Button fx:id="sourceDirectoryButton" layoutX="755.0" layoutY="151.0" mnemonicParsing="false" />
+      <TextArea fx:id="messageArea" editable="false" layoutX="51.0" layoutY="290.0" prefHeight="253.0" prefWidth="800.0">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </TextArea>
+      <Button fx:id="copyButton" disable="true" layoutX="51.0" layoutY="551.0" mnemonicParsing="false" prefHeight="39.0" prefWidth="800.0" style="-fx-background-color: #f39c63;" text="COPY" textFill="WHITE">
+         <font>
+            <Font name="System Bold" size="18.0" />
+         </font>
+      </Button>
+      <TextField fx:id="targetDirectoryField" layoutX="234.0" layoutY="200.0" prefHeight="31.0" prefWidth="521.0" />
+      <TextField fx:id="fileListField" layoutX="234.0" layoutY="246.0" prefHeight="31.0" prefWidth="521.0" />
+      <Button fx:id="targetDirectoryButton" layoutX="755.0" layoutY="200.0" mnemonicParsing="false" />
+      <Button fx:id="fileListButton" layoutX="755.0" layoutY="246.0" mnemonicParsing="false" />
+      <ProgressBar fx:id="progressBar" layoutX="50.0" layoutY="551.0" prefHeight="39.0" prefWidth="800.0" progress="0.0" style="-fx-accent: #f39c63;" visible="false" />
+   </children>
+</AnchorPane>
