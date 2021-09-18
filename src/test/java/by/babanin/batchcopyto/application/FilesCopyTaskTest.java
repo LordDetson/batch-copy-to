@@ -23,16 +23,15 @@ class FilesCopyTaskTest {
     private static final String SOURCE_DIRECTORY_PATH = "src/test/resources/source";
     private static final String TARGET_DIRECTORY_PATH = "src/test/resources/target";
     private static final String FILE_LIST_TO_COPY_PATH = "src/test/resources/file list to copy.txt";
+    private static final String FILE_AND_DIRECTORY_LIST_TO_COPY_PATH = "src/test/resources/file and directory list to copy.txt";
 
-    private Configuration configuration;
+    private Path sourceDirectory;
+    private Path targetDirectory;
 
     @BeforeEach
     void setUp() {
-        Path sourceDirectory = Paths.get(SOURCE_DIRECTORY_PATH);
-        Path targetDirectory = Paths.get(TARGET_DIRECTORY_PATH);
-        Path fileListToCopy = Paths.get(FILE_LIST_TO_COPY_PATH);
-        Set<Path> files = readFiles(fileListToCopy);
-        configuration = new Configuration(sourceDirectory, targetDirectory, files);
+        sourceDirectory = Paths.get(SOURCE_DIRECTORY_PATH);
+        targetDirectory = Paths.get(TARGET_DIRECTORY_PATH);
     }
 
     private Set<Path> readFiles(Path fileListToCopy) {
@@ -51,12 +50,32 @@ class FilesCopyTaskTest {
 
     @Test
     void copyFiles() throws ApplicationException, IOException {
-        FilesCopyTask task = new FilesCopyTask(configuration);
+        Set<SourceTargetItem> items = createSourceTargetItems(FILE_LIST_TO_COPY_PATH);
+        FilesCopyTask task = new FilesCopyTask(items);
 
         task.run();
 
-        Set<SourceTargetItem> items = ConfigurationToSourceTargetItemConverter.convert(configuration);
+        checkAndDeleteCopiedFile(items);
+    }
 
+    @Test
+    void copyFilesWithDirectory() throws ApplicationException, IOException {
+        Set<SourceTargetItem> items = createSourceTargetItems(FILE_AND_DIRECTORY_LIST_TO_COPY_PATH);
+        FilesCopyTask task = new FilesCopyTask(items);
+
+        task.run();
+
+        checkAndDeleteCopiedFile(items);
+    }
+
+    private Set<SourceTargetItem> createSourceTargetItems(String fileListToCopyPath) {
+        Path fileListToCopy = Paths.get(fileListToCopyPath);
+        Set<Path> files = readFiles(fileListToCopy);
+        Configuration configuration = new Configuration(sourceDirectory, targetDirectory, files);
+        return ConfigurationToSourceTargetItemConverter.convert(configuration);
+    }
+
+    private void checkAndDeleteCopiedFile(Set<SourceTargetItem> items) throws IOException {
         for(SourceTargetItem item : items) {
             Path sourceFile = item.getSourceFile();
             Path targetFile = item.getTargetFile();

@@ -2,6 +2,7 @@ package by.babanin.batchcopyto.application;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Set;
 
 import by.babanin.batchcopyto.domain.Configuration;
@@ -24,7 +25,12 @@ public class FilesCopyTask implements Task {
     public void run() throws ApplicationException {
         try {
             for(SourceTargetItem item : sourceTargetItems) {
-                Files.copy(item.getSourceFile(), item.getTargetFile());
+                Path targetFile = item.getTargetFile();
+                Path parentTargetDirectory = targetFile.getParent();
+                if(!Files.exists(parentTargetDirectory)) {
+                    Files.createDirectories(parentTargetDirectory);
+                }
+                Files.copy(item.getSourceFile(), targetFile);
             }
         }
         catch(IOException e) {
