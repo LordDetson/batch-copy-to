@@ -13,3 +13,6 @@ Improvements:
 * Add validation and filtering for reading the file list.
 * Implement a progress bar.
 * Add text style to the message area.
+* Add file size in the message area.
+* Refactoring the code.
+* Add icons and tool tips to choose buttons.
