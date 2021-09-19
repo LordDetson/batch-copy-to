@@ -16,3 +16,4 @@ Improvements:
 * Add file size in the message area.
 * Refactoring the code.
 * Add icons and tool tips to choose buttons.
+* Fix enabling/disabling the Copy button.
