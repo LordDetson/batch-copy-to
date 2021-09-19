@@ -18,7 +18,7 @@ import by.babanin.batchcopyto.exception.ApplicationException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class FilesCopyTaskTest {
+class CopyFilesTaskTest {
 
     private static final String SOURCE_DIRECTORY_PATH = "src/test/resources/source";
     private static final String TARGET_DIRECTORY_PATH = "src/test/resources/target";
@@ -51,7 +51,7 @@ class FilesCopyTaskTest {
     @Test
     void copyFiles() throws ApplicationException, IOException {
         Set<SourceTargetItem> items = createSourceTargetItems(FILE_LIST_TO_COPY_PATH);
-        FilesCopyTask task = new FilesCopyTask(items);
+        CopyFilesTask task = new CopyFilesTask(items);
 
         task.run();
 
@@ -61,7 +61,7 @@ class FilesCopyTaskTest {
     @Test
     void copyFilesWithDirectory() throws ApplicationException, IOException {
         Set<SourceTargetItem> items = createSourceTargetItems(FILE_AND_DIRECTORY_LIST_TO_COPY_PATH);
-        FilesCopyTask task = new FilesCopyTask(items);
+        CopyFilesTask task = new CopyFilesTask(items);
 
         task.run();
 

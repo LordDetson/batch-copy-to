@@ -2,7 +2,7 @@ package by.babanin.batchcopyto.application;
 
 import by.babanin.batchcopyto.exception.ApplicationException;
 
-public interface Task {
+public interface Task<R> {
 
-    void run() throws ApplicationException;
+    R run() throws ApplicationException;
 }
