@@ -1,0 +1,2 @@
+file1.txt                   // This file must be in the "From" directory. The file name must have an extension.
+directory1/file3.txt        // The utility is able to copy files from subdirectories.
