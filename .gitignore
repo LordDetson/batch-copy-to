@@ -24,6 +24,10 @@ hs_err_pid*
 
 # Intellij Idea files
 .idea
+*.iml
 
 # Compiled files
 /target
+/application/target
+/domain/target
+/gui/target
