@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import by.babanin.batchcopy.application.CopyFilesTask;
 import by.babanin.batchcopy.application.CopyTaskResult;
 import by.babanin.batchcopy.application.TaskListener;
+import by.babanin.batchcopy.application.ValidatebleTask.TaskMode;
 import by.babanin.batchcopy.application.exception.TaskException;
 import by.babanin.batchcopy.domain.Configuration;
 import javafx.event.ActionEvent;
@@ -23,6 +24,8 @@ public class CopyHandler extends AbstractActionHandler<ActionEvent> {
     private final TextField fileListField;
     private final TextArea messageArea;
     private final ProgressBar progressBar;
+
+    private TaskMode mode = TaskMode.ACTION;
 
     public CopyHandler(TextField sourceDirectoryField, TextField targetDirectoryField, TextField fileListField, TextArea messageArea,
             ProgressBar progressBar) {
@@ -45,8 +48,9 @@ public class CopyHandler extends AbstractActionHandler<ActionEvent> {
         Configuration configuration = new Configuration(sourcePath, targetPath, fileListPath);
 
         CopyFilesTask task = new CopyFilesTask(configuration);
+        task.setMode(mode);
         task.addListener(createCopyFilesTaskListener(messageArea));
-        task.addListenerToSubTasks(createCopyFileSubTaskListener(messageArea));
+        task.addSubTaskListener(createCopyFileSubTaskListener(messageArea));
         try {
             task.run();
         }
@@ -61,7 +65,22 @@ public class CopyHandler extends AbstractActionHandler<ActionEvent> {
 
             @Override
             public void doBefore() {
-                messageArea.setText("Starting...\n");
+                messageArea.setText("Starting " + getModeCaption() + "...\n");
+            }
+
+            private String getModeCaption() {
+                String header = "";
+                switch(mode) {
+                case ACTION:
+                    header = "copy";
+                    break;
+                case VALIDATION:
+                    header = "validation";
+                    break;
+                default:
+                    assert false : mode + " isn't supported";
+                }
+                return header;
             }
 
             @Override
@@ -71,10 +90,17 @@ public class CopyHandler extends AbstractActionHandler<ActionEvent> {
                         .filter(CopyTaskResult::hasException)
                         .collect(Collectors.toList());
                 successfullyResults.removeAll(exceptionResults);
+
+                showResults(successfullyResults, exceptionResults);
+            }
+
+            private void showResults(List<CopyTaskResult> successfullyResults, List<CopyTaskResult> exceptionResults) {
                 StringBuilder builder = new StringBuilder();
-                builder.append("\n-------------------------------------------------\n");
-                builder.append("Summary result:\n");
-                builder.append("Copy successfully (")
+                builder.append("\n--------------------------------------------------------------------------------------------------\n")
+                        .append("Summary ")
+                        .append(getModeCaption())
+                        .append(" result:\n")
+                        .append("Copy successful (")
                         .append(successfullyResults.size())
                         .append(" count)\n");
                 if(!exceptionResults.isEmpty()) {
@@ -103,24 +129,29 @@ public class CopyHandler extends AbstractActionHandler<ActionEvent> {
             @Override
             public void doAfter(CopyTaskResult result) {
                 StringBuilder builder = new StringBuilder();
-                if(!result.hasException()) {
-                    Path targetFile = result.getTargetFile();
-                    Path sourceFile = result.getSourceFile();
-                    builder.append("Coped ")
-                            .append(targetFile.getFileName().toString())
-                            .append(" file from ")
-                            .append(sourceFile.getParent().toString())
-                            .append(" to ")
-                            .append(targetFile.getParent().toString())
-                            .append("\n");
-                }
-                else {
-                    builder.append("Not coped: ")
-                            .append(result.getException().getMessage())
+                Path targetFile = result.getTargetFile();
+                Path sourceFile = result.getSourceFile();
+                builder.append(result.hasException() ? "Not coped " : "Coped ")
+                        .append("\"").append(targetFile.getFileName().toString()).append("\"")
+                        .append(" file from ")
+                        .append("\"").append(sourceFile.getParent().toString()).append("\"")
+                        .append(" to ")
+                        .append("\"").append(targetFile.getParent().toString()).append("\"")
+                        .append("\n");
+                if(result.hasException()) {
+                    builder.append(result.getException().getMessage())
                             .append("\n");
                 }
                 messageArea.appendText(builder.toString());
             }
         };
+    }
+
+    public void enableCopyMode() {
+        mode = TaskMode.ACTION;
+    }
+
+    public void enableValidationMode() {
+        mode = TaskMode.VALIDATION;
     }
 }

@@ -9,12 +9,8 @@ Steps:
 ![GUI](https://github.com/LordDetson/batch-copy-to/blob/main/GUI.png)
 
 Future improvements:
-* Improve the validation of paths and files. (in progress)
-* Add validation and filtering for reading the file list. (in progress)
 * Implement a progress bar. 
 * Add text style to the message area. (in progress)
 * Add file size in the message area.
-* Refactoring the code.
 * Add icons and tool tips to choose buttons.
-* Fix enabling/disabling the Copy button. (in progress)
-* Implemente console tool
+* Implement console tool

@@ -1,31 +1,59 @@
 package by.babanin.batchcopy.application;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import by.babanin.batchcopy.application.exception.TaskException;
 
 public class MultiTask<R> extends AbstractTask<List<R>> {
 
-    private final List<AbstractTask<R>> subTasks;
+    private final List<AbstractTask<R>> subTasks = new ArrayList<>();
+    private final List<TaskListener<R>> subTaskListeners = new ArrayList<>();
 
-    public MultiTask(List<AbstractTask<R>> subTasks) {
-        this.subTasks = subTasks;
+    public MultiTask() {
+        this(Collections.emptyList());
     }
 
-    public void addListenerToSubTasks(TaskListener<R> listener) {
-        subTasks.forEach(subTask -> subTask.addListener(listener));
+    public MultiTask(Collection<? extends AbstractTask<R>> subTasks) {
+        addSubTasks(subTasks);
     }
 
-    public void removeListenerFromSubTasks(TaskListener<R> listener) {
-        subTasks.forEach(subTask -> subTask.removeListener(listener));
+    public void addSubTask(AbstractTask<R> subTask) {
+        subTasks.add(subTask);
+    }
+
+    public void addSubTasks(Collection<? extends AbstractTask<R>> subTasks) {
+        this.subTasks.addAll(subTasks);
+    }
+
+    public void removeSubTask(AbstractTask<R> subTask) {
+        subTasks.remove(subTask);
+    }
+
+    public void removeSubTasks(Collection<? extends AbstractTask<R>> subTasks) {
+        this.subTasks.removeAll(subTasks);
+    }
+
+    public void removeAllSubTasks() {
+        this.subTasks.clear();
+    }
+
+    public void addSubTaskListener(TaskListener<R> listener) {
+        subTaskListeners.add(listener);
+    }
+
+    public void removeSubTaskListener(TaskListener<R> listener) {
+        subTaskListeners.remove(listener);
     }
 
     @Override
     protected List<R> body() throws TaskException {
         List<R> results = new ArrayList<>();
-        for(Task<R> task : subTasks) {
-            results.add(task.run());
+        for(AbstractTask<R> subTask : subTasks) {
+            subTaskListeners.forEach(subTask::addListener);
+            results.add(subTask.run());
         }
         return results;
     }

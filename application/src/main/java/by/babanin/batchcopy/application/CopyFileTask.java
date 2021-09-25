@@ -3,10 +3,12 @@ package by.babanin.batchcopy.application;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import by.babanin.batchcopy.application.exception.TaskException;
+import by.babanin.batchcopy.application.util.PathUtils;
 
-public class CopyFileTask extends AbstractTask<CopyTaskResult>{
+public class CopyFileTask extends ValidatebleTask<CopyTaskResult> {
 
     private final Path sourceFile;
     private final Path targetFile;
@@ -17,19 +19,35 @@ public class CopyFileTask extends AbstractTask<CopyTaskResult>{
     }
 
     @Override
-    protected CopyTaskResult body() {
-        CopyTaskResult result;
-        try {
-            Path parentTargetDirectory = targetFile.getParent();
-            if(!Files.exists(parentTargetDirectory)) {
-                Files.createDirectories(parentTargetDirectory);
-            }
-            Files.copy(sourceFile, targetFile);
-            result = new CopyTaskResult(sourceFile, targetFile);
+    protected CopyTaskResult doValidation() {
+        List<String> messages = PathUtils.validateFile(sourceFile);
+        messages.addAll(PathUtils.validateAlreadyExistFile(targetFile));
+        if(!messages.isEmpty()) {
+            return new CopyTaskResult(sourceFile, targetFile, new TaskException(String.join("\n", messages)));
         }
-        catch(IOException e) {
-            result = new CopyTaskResult(sourceFile, targetFile, new TaskException(e));
+        return new CopyTaskResult(sourceFile, targetFile);
+    }
+
+    @Override
+    protected CopyTaskResult doAction() {
+        CopyTaskResult result = doValidation();
+        if(!result.hasException()) {
+            try {
+                createParentDirectoryIfNotExist();
+                Files.copy(sourceFile, targetFile);
+                result = new CopyTaskResult(sourceFile, targetFile);
+            }
+            catch(IOException e) {
+                result = new CopyTaskResult(sourceFile, targetFile, new TaskException(e));
+            }
         }
         return result;
+    }
+
+    private void createParentDirectoryIfNotExist() throws IOException {
+        Path parentTargetDirectory = targetFile.getParent();
+        if(!Files.exists(parentTargetDirectory)) {
+            Files.createDirectories(parentTargetDirectory);
+        }
     }
 }
