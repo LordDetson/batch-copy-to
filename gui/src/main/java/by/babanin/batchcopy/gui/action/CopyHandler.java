@@ -1,7 +1,6 @@
 package by.babanin.batchcopy.gui.action;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -12,22 +11,24 @@ import by.babanin.batchcopy.application.TaskListener;
 import by.babanin.batchcopy.application.ValidatebleTask.TaskMode;
 import by.babanin.batchcopy.application.exception.TaskException;
 import by.babanin.batchcopy.domain.Configuration;
+import by.babanin.batchcopy.gui.component.DirectorySelectionField;
+import by.babanin.batchcopy.gui.component.FileSelectionField;
 import javafx.event.ActionEvent;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
 
 public class CopyHandler extends AbstractActionHandler<ActionEvent> {
 
-    private final TextField sourceDirectoryField;
-    private final TextField targetDirectoryField;
-    private final TextField fileListField;
+    private final DirectorySelectionField sourceDirectoryField;
+    private final DirectorySelectionField targetDirectoryField;
+    private final FileSelectionField fileListField;
     private final TextArea messageArea;
     private final ProgressBar progressBar;
 
     private TaskMode mode = TaskMode.ACTION;
 
-    public CopyHandler(TextField sourceDirectoryField, TextField targetDirectoryField, TextField fileListField, TextArea messageArea,
+    public CopyHandler(
+            DirectorySelectionField sourceDirectoryField, DirectorySelectionField targetDirectoryField, FileSelectionField fileListField, TextArea messageArea,
             ProgressBar progressBar) {
         this.sourceDirectoryField = sourceDirectoryField;
         this.targetDirectoryField = targetDirectoryField;
@@ -38,13 +39,9 @@ public class CopyHandler extends AbstractActionHandler<ActionEvent> {
 
     @Override
     void body() {
-        String sourceText = sourceDirectoryField.getText();
-        String targetText = targetDirectoryField.getText();
-        String fileListText = fileListField.getText();
-
-        Path sourcePath = Paths.get(sourceText);
-        Path targetPath = Paths.get(targetText);
-        Path fileListPath = Paths.get(fileListText);
+        Path sourcePath = sourceDirectoryField.getPath();
+        Path targetPath = targetDirectoryField.getPath();
+        Path fileListPath = fileListField.getPath();
         Configuration configuration = new Configuration(sourcePath, targetPath, fileListPath);
 
         CopyFilesTask task = new CopyFilesTask(configuration);

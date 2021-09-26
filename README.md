@@ -12,5 +12,4 @@ Future improvements:
 * Implement a progress bar. 
 * Add text style to the message area. (in progress)
 * Add file size in the message area.
-* Add icons and tool tips to choose buttons.
 * Implement console tool
