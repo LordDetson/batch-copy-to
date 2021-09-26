@@ -1,4 +1,4 @@
-# batch-copy-to
+# batch-copy-tool
 Utility for batch copying files and directories to the specified path
 
 Steps:
