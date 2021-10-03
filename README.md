@@ -11,5 +11,4 @@ Steps:
 Future improvements:
 * Implement a progress bar. 
 * Add text style to the message area. (in progress)
-* Add file size in the message area.
 * Implement console tool

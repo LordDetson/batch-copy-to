@@ -21,25 +21,32 @@ public class CopyFileTask extends ValidatebleTask<CopyTaskResult> {
 
     @Override
     protected CopyTaskResult doValidation() {
+        CopyTaskResult result = new CopyTaskResult(sourceFile, targetFile);
         List<String> messages = PathUtils.validateFile(sourceFile);
         messages.addAll(PathUtils.validateAlreadyExistFile(targetFile));
         if(!messages.isEmpty()) {
-            return new CopyTaskResult(sourceFile, targetFile, new TaskException(String.join("\n", messages)));
+            result.setException(new TaskException(String.join("\n", messages)));
+            return result;
         }
-        return new CopyTaskResult(sourceFile, targetFile);
+        try {
+            result.setFileSize(Files.size(sourceFile));
+        }
+        catch(IOException e) {
+            result.setException(new TaskException(e));
+        }
+        return result;
     }
 
     @Override
     protected CopyTaskResult doAction() {
         CopyTaskResult result = doValidation();
-        if(!result.hasException()) {
+        if(!result.getException().isPresent()) {
             try {
                 createParentDirectoryIfNotExist();
                 Files.copy(sourceFile, targetFile);
-                result = new CopyTaskResult(sourceFile, targetFile);
             }
             catch(IOException e) {
-                result = new CopyTaskResult(sourceFile, targetFile, new TaskException(e));
+                result.setException(new TaskException(e));
             }
         }
         return result;

@@ -3,6 +3,7 @@ package by.babanin.batchcopy.gui.action;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import by.babanin.batchcopy.application.CopyFilesTask;
@@ -78,15 +79,16 @@ public class CopyHandler extends AbstractActionHandler<ActionEvent> {
             @Override
             public void doAfter(List<CopyTaskResult> results) {
                 List<CopyTaskResult> successfullyResults = new ArrayList<>(results);
-                List<CopyTaskResult> exceptionResults = results.stream()
-                        .filter(CopyTaskResult::hasException)
+                List<TaskException> exceptions = results.stream()
+                        .filter(result -> result.getException().isPresent())
+                        .map(result -> result.getException().get())
                         .collect(Collectors.toList());
-                successfullyResults.removeAll(exceptionResults);
+                successfullyResults.removeIf(result -> result.getException().isPresent());
 
-                showResults(successfullyResults, exceptionResults);
+                showResults(successfullyResults, exceptions);
             }
 
-            private void showResults(List<CopyTaskResult> successfullyResults, List<CopyTaskResult> exceptionResults) {
+            private void showResults(List<CopyTaskResult> successfullyResults, List<TaskException> exceptions) {
                 StringBuilder builder = new StringBuilder();
                 builder.append("\n--------------------------------------------------------------------------------------------------\n")
                         .append("Summary ")
@@ -95,12 +97,11 @@ public class CopyHandler extends AbstractActionHandler<ActionEvent> {
                         .append("Copy successful (")
                         .append(successfullyResults.size())
                         .append(" count)\n");
-                if(!exceptionResults.isEmpty()) {
+                if(!exceptions.isEmpty()) {
                     builder.append("Copy unsuccessfully (")
-                            .append(exceptionResults.size())
+                            .append(exceptions.size())
                             .append(" count)\n");
-                    exceptionResults.forEach(result -> {
-                        TaskException exception = result.getException();
+                    exceptions.forEach(exception -> {
                         builder.append(exception.getMessage()).append("\n");
                         exception.printStackTrace();
                     });
@@ -123,17 +124,17 @@ public class CopyHandler extends AbstractActionHandler<ActionEvent> {
                 StringBuilder builder = new StringBuilder();
                 Path targetFile = result.getTargetFile();
                 Path sourceFile = result.getSourceFile();
-                builder.append(result.hasException() ? "Not coped " : "Coped ")
+                Optional<TaskException> exception = result.getException();
+                Optional<Long> fileSize = result.getFileSize();
+                builder.append(exception.isPresent() ? "Not coped " : "Coped ")
                         .append("\"").append(targetFile.getFileName().toString()).append("\"")
                         .append(" file from ")
                         .append("\"").append(sourceFile.getParent().toString()).append("\"")
                         .append(" to ")
-                        .append("\"").append(targetFile.getParent().toString()).append("\"")
-                        .append("\n");
-                if(result.hasException()) {
-                    builder.append(result.getException().getMessage())
-                            .append("\n");
-                }
+                        .append("\"").append(targetFile.getParent().toString()).append("\"");
+                fileSize.ifPresent(size -> builder.append(" (").append(size).append(" bytes)"));
+                builder.append("\n");
+                exception.ifPresent(e -> builder.append(e.getMessage()).append("\n"));
                 messageArea.appendText(builder.toString());
             }
         };

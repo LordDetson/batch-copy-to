@@ -1,6 +1,7 @@
 package by.babanin.batchcopy.application;
 
 import java.nio.file.Path;
+import java.util.Optional;
 
 import by.babanin.batchcopy.application.exception.TaskException;
 
@@ -8,16 +9,12 @@ public class CopyTaskResult {
 
     private final Path sourceFile;
     private final Path targetFile;
-    private final TaskException exception;
+    private Long fileSize;
+    private TaskException exception;
 
     public CopyTaskResult(Path sourceFile, Path targetFile) {
-        this(sourceFile, targetFile, null);
-    }
-
-    public CopyTaskResult(Path sourceFile, Path targetFile, TaskException exception) {
         this.sourceFile = sourceFile;
         this.targetFile = targetFile;
-        this.exception = exception;
     }
 
     public Path getSourceFile() {
@@ -28,11 +25,19 @@ public class CopyTaskResult {
         return targetFile;
     }
 
-    public TaskException getException() {
-        return exception;
+    public Optional<Long> getFileSize() {
+        return Optional.ofNullable(fileSize);
     }
 
-    public boolean hasException() {
-        return exception != null;
+    public void setFileSize(Long fileSize) {
+        this.fileSize = fileSize;
+    }
+
+    public Optional<TaskException> getException() {
+        return Optional.ofNullable(exception);
+    }
+
+    public void setException(TaskException exception) {
+        this.exception = exception;
     }
 }
