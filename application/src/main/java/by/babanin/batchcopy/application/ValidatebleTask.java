@@ -4,6 +4,10 @@ import by.babanin.batchcopy.application.exception.TaskException;
 
 public abstract class ValidatebleTask<R> extends AbstractTask<R>{
 
+    protected ValidatebleTask(String name) {
+        super(name);
+    }
+
     public enum TaskMode {
         ACTION(ValidatebleTask::doAction), VALIDATION(ValidatebleTask::doValidation);
 
@@ -14,7 +18,7 @@ public abstract class ValidatebleTask<R> extends AbstractTask<R>{
         }
 
         @SuppressWarnings("unchecked")
-        public <R> R execut(ValidatebleTask<? extends R> task) throws TaskException {
+        public <R> R execute(ValidatebleTask<? extends R> task) throws TaskException {
             return (R) action.apply(task);
         }
     }
@@ -23,7 +27,7 @@ public abstract class ValidatebleTask<R> extends AbstractTask<R>{
 
     @Override
     protected R body() throws TaskException {
-        return mode.execut(this);
+        return mode.execute(this);
     }
 
     protected abstract R doAction() throws TaskException;

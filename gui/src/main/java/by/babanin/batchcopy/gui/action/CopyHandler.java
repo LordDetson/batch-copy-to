@@ -13,6 +13,7 @@ import by.babanin.batchcopy.application.exception.TaskException;
 import by.babanin.batchcopy.domain.Configuration;
 import by.babanin.batchcopy.gui.component.DirectorySelectionField;
 import by.babanin.batchcopy.gui.component.FileSelectionField;
+import by.babanin.batchcopy.gui.concurrent.TaskManager;
 import javafx.event.ActionEvent;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextArea;
@@ -48,13 +49,7 @@ public class CopyHandler extends AbstractActionHandler<ActionEvent> {
         task.setMode(mode);
         task.addListener(createCopyFilesTaskListener(messageArea));
         task.addSubTaskListener(createCopyFileSubTaskListener(messageArea));
-        try {
-            task.run();
-        }
-        catch(TaskException e) {
-            messageArea.appendText(e.getMessage());
-            e.printStackTrace();
-        }
+        TaskManager.run(task);
     }
 
     private TaskListener<List<CopyTaskResult>> createCopyFilesTaskListener(TextArea messageArea) {

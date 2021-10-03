@@ -12,11 +12,12 @@ public class MultiTask<R> extends AbstractTask<List<R>> {
     private final List<AbstractTask<R>> subTasks = new ArrayList<>();
     private final List<TaskListener<R>> subTaskListeners = new ArrayList<>();
 
-    public MultiTask() {
-        this(Collections.emptyList());
+    public MultiTask(String name) {
+        this(name, Collections.emptyList());
     }
 
-    public MultiTask(Collection<? extends AbstractTask<R>> subTasks) {
+    public MultiTask(String name, Collection<? extends AbstractTask<R>> subTasks) {
+        super(name);
         addSubTasks(subTasks);
     }
 
@@ -46,6 +47,14 @@ public class MultiTask<R> extends AbstractTask<List<R>> {
 
     public void removeSubTaskListener(TaskListener<R> listener) {
         subTaskListeners.remove(listener);
+    }
+
+    public void removeAllSubTaskListeners() {
+        subTaskListeners.clear();
+    }
+
+    public List<TaskListener<R>> getSubTaskListeners() {
+        return subTaskListeners;
     }
 
     @Override

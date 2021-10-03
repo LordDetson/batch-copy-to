@@ -14,6 +14,7 @@ public class CopyFileTask extends ValidatebleTask<CopyTaskResult> {
     private final Path targetFile;
 
     public CopyFileTask(Path sourceFile, Path targetFile) {
+        super("file copy task");
         this.sourceFile = sourceFile;
         this.targetFile = targetFile;
     }

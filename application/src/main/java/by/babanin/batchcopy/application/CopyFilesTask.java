@@ -22,6 +22,7 @@ public class CopyFilesTask extends MultiTask<CopyTaskResult> {
     private TaskMode mode = TaskMode.ACTION;
 
     public CopyFilesTask(Configuration configuration) {
+        super("files copy task");
         this.configuration = configuration;
     }
 
