@@ -9,6 +9,7 @@ Steps:
 ![GUI](https://github.com/LordDetson/batch-copy-to/blob/main/GUI.png)
 
 Future improvements:
+* Run tasks in the background.
 * Implement a progress bar. 
 * Add text style to the message area. (in progress)
 * Add file size in the message area.
