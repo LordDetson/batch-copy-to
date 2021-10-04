@@ -43,10 +43,16 @@ public abstract class AbstractTask<R> implements ApplicationTask<R> {
 
     @Override
     public R run() throws TaskException {
-        listeners.forEach(TaskListener::doBefore);
-        R result = body();
-        listeners.forEach(listener -> listener.doAfter(result));
-        return result;
+        try {
+            listeners.forEach(TaskListener::doBefore);
+            R result = body();
+            listeners.forEach(listener -> listener.doAfter(result));
+            return result;
+        }
+        catch(TaskException e) {
+            listeners.forEach(listener -> listener.doFailed(e));
+            throw e;
+        }
     }
 
     protected abstract R body() throws TaskException;

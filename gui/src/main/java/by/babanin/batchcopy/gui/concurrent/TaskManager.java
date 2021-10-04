@@ -7,6 +7,7 @@ import by.babanin.batchcopy.application.ApplicationTask;
 import by.babanin.batchcopy.application.MultiTask;
 import by.babanin.batchcopy.application.TaskListener;
 import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
 
 public final class TaskManager {
 
@@ -19,7 +20,9 @@ public final class TaskManager {
         else {
             wrapListeners(task);
         }
-        Thread thread = new Thread(createBackgroundTask(task), task.getName());
+        Task<R> backgroundTask = createBackgroundTask(task);
+        backgroundTask.setOnFailed(TaskManager::handleException);
+        Thread thread = new Thread(backgroundTask, task.getName());
         thread.setDaemon(true);
         thread.start();
     }
@@ -54,5 +57,9 @@ public final class TaskManager {
         subTaskListeners.stream()
                 .map(TaskListenerWrapper::new)
                 .forEach(task::addSubTaskListener);
+    }
+
+    private static void handleException(WorkerStateEvent event) {
+        event.getSource().getException().printStackTrace();
     }
 }

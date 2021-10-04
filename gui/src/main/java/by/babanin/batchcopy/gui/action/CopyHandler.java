@@ -108,6 +108,11 @@ public class CopyHandler extends AbstractActionHandler<ActionEvent> {
                 }
                 messageArea.appendText(builder.toString());
             }
+
+            @Override
+            public void doFailed(TaskException taskException) {
+                messageArea.appendText(taskException.getMessage());
+            }
         };
     }
 
@@ -136,6 +141,11 @@ public class CopyHandler extends AbstractActionHandler<ActionEvent> {
                 builder.append("\n");
                 exception.ifPresent(e -> builder.append(e.getMessage()).append("\n"));
                 messageArea.appendText(builder.toString());
+            }
+
+            @Override
+            public void doFailed(TaskException taskException) {
+                messageArea.appendText(taskException.getMessage());
             }
         };
     }

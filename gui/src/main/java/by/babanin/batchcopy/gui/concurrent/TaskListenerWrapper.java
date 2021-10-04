@@ -1,6 +1,7 @@
 package by.babanin.batchcopy.gui.concurrent;
 
 import by.babanin.batchcopy.application.TaskListener;
+import by.babanin.batchcopy.application.exception.TaskException;
 import javafx.application.Platform;
 
 public class TaskListenerWrapper<R> implements TaskListener<R> {
@@ -19,5 +20,10 @@ public class TaskListenerWrapper<R> implements TaskListener<R> {
     @Override
     public void doAfter(R result) {
         Platform.runLater(() -> listener.doAfter(result));
+    }
+
+    @Override
+    public void doFailed(TaskException taskException) {
+        Platform.runLater(() -> listener.doFailed(taskException));
     }
 }

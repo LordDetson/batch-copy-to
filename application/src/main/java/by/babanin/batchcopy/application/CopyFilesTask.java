@@ -1,6 +1,5 @@
 package by.babanin.batchcopy.application;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -60,7 +59,7 @@ public class CopyFilesTask extends MultiTask<CopyTaskResult> {
             return Files.readAllLines(configuration.getFileListPath()).stream()
                     .collect(Collectors.toMap(sourceDirectory::resolve, targetDirectory::resolve));
         }
-        catch(IOException e) {
+        catch(Exception e) {
             throw new TaskException(e);
         }
     }
