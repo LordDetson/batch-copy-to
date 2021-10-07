@@ -9,6 +9,5 @@ Steps:
 ![GUI](https://github.com/LordDetson/batch-copy-to/blob/main/GUI.png)
 
 Future improvements:
-* Implement a progress bar. 
 * Add text style to the message area. (in progress)
 * Implement console tool

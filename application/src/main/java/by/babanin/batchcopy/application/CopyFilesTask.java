@@ -2,9 +2,12 @@ package by.babanin.batchcopy.application;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import by.babanin.batchcopy.application.ValidatebleTask.TaskMode;
@@ -18,6 +21,8 @@ public class CopyFilesTask extends MultiTask<CopyTaskResult> {
     private static final Validator<Configuration> VALIDATOR = new ConfigurationValidator();
 
     private final Configuration configuration;
+    private final List<ProgressListener<Long>> progressListeners = new ArrayList<>();
+
     private TaskMode mode = TaskMode.ACTION;
 
     public CopyFilesTask(Configuration configuration) {
@@ -29,8 +34,28 @@ public class CopyFilesTask extends MultiTask<CopyTaskResult> {
     protected List<CopyTaskResult> body() throws TaskException {
         validateConfiguration();
         List<CopyFileTask> tasks = createCopyFileTasks();
+        if(mode == TaskMode.ACTION) {
+            Long fileSizesSum = calculateFileSizeSum(tasks);
+            progressListeners.forEach(listener -> listener.saveProgressEnd(fileSizesSum));
+        }
         addSubTasks(tasks);
         return super.body();
+    }
+
+    private Long calculateFileSizeSum(List<CopyFileTask> tasks) throws TaskException {
+        AtomicLong fileSizeSum = new AtomicLong(0L);
+        for(CopyFileTask task : tasks) {
+            getFileSize(task).ifPresent(fileSizeSum::addAndGet);
+            progressListeners.forEach(task::addProgressListener);
+        }
+        return fileSizeSum.get();
+    }
+
+    private Optional<Long> getFileSize(CopyFileTask task) throws TaskException {
+        task.setMode(TaskMode.VALIDATION);
+        CopyTaskResult result = task.run();
+        task.setMode(mode);
+        return result.getFileSize();
     }
 
     private void validateConfiguration() throws TaskException {
@@ -70,5 +95,17 @@ public class CopyFilesTask extends MultiTask<CopyTaskResult> {
 
     public void setMode(TaskMode mode) {
         this.mode = mode;
+    }
+
+    public void addProgressListener(ProgressListener<Long> listener) {
+        progressListeners.add(listener);
+    }
+
+    public void removeProgressListener(ProgressListener<Long> listener) {
+        progressListeners.remove(listener);
+    }
+
+    public void removeAllProgressListeners() {
+        progressListeners.clear();
     }
 }

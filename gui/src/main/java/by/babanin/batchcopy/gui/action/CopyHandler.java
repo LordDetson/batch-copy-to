@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import by.babanin.batchcopy.application.CopyFilesTask;
 import by.babanin.batchcopy.application.CopyTaskResult;
+import by.babanin.batchcopy.application.ProgressListener;
 import by.babanin.batchcopy.application.TaskListener;
 import by.babanin.batchcopy.application.ValidatebleTask.TaskMode;
 import by.babanin.batchcopy.application.exception.TaskException;
@@ -15,7 +16,9 @@ import by.babanin.batchcopy.domain.Configuration;
 import by.babanin.batchcopy.gui.component.DirectorySelectionField;
 import by.babanin.batchcopy.gui.component.FileSelectionField;
 import by.babanin.batchcopy.gui.concurrent.TaskManager;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.scene.control.Button;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextArea;
 
@@ -26,21 +29,24 @@ public class CopyHandler extends AbstractActionHandler<ActionEvent> {
     private final FileSelectionField fileListField;
     private final TextArea messageArea;
     private final ProgressBar progressBar;
+    private final Button copyButton;
+    private final Button validButton;
 
     private TaskMode mode = TaskMode.ACTION;
 
-    public CopyHandler(
-            DirectorySelectionField sourceDirectoryField, DirectorySelectionField targetDirectoryField, FileSelectionField fileListField, TextArea messageArea,
-            ProgressBar progressBar) {
+    public CopyHandler(DirectorySelectionField sourceDirectoryField, DirectorySelectionField targetDirectoryField,
+            FileSelectionField fileListField, TextArea messageArea, ProgressBar progressBar, Button copyButton, Button validButton) {
         this.sourceDirectoryField = sourceDirectoryField;
         this.targetDirectoryField = targetDirectoryField;
         this.fileListField = fileListField;
         this.messageArea = messageArea;
         this.progressBar = progressBar;
+        this.copyButton = copyButton;
+        this.validButton = validButton;
     }
 
     @Override
-    void body() {
+    public void body() {
         Path sourcePath = sourceDirectoryField.getPath();
         Path targetPath = targetDirectoryField.getPath();
         Path fileListPath = fileListField.getPath();
@@ -48,16 +54,20 @@ public class CopyHandler extends AbstractActionHandler<ActionEvent> {
 
         CopyFilesTask task = new CopyFilesTask(configuration);
         task.setMode(mode);
-        task.addListener(createCopyFilesTaskListener(messageArea));
-        task.addSubTaskListener(createCopyFileSubTaskListener(messageArea));
+        task.addListener(createCopyFilesTaskListener());
+        task.addProgressListener(createProgressListener());
+        task.addSubTaskListener(createCopyFileSubTaskListener());
         TaskManager.run(task);
     }
 
-    private TaskListener<List<CopyTaskResult>> createCopyFilesTaskListener(TextArea messageArea) {
+    private TaskListener<List<CopyTaskResult>> createCopyFilesTaskListener() {
         return new TaskListener<List<CopyTaskResult>>() {
 
             @Override
             public void doBefore() {
+                if(mode == TaskMode.ACTION) {
+                    showProgressBar(true);
+                }
                 messageArea.setText("Starting " + getModeCaption() + "...\n");
             }
 
@@ -86,6 +96,9 @@ public class CopyHandler extends AbstractActionHandler<ActionEvent> {
                 successfullyResults.removeIf(result -> result.getException().isPresent());
 
                 showResults(successfullyResults, exceptions);
+                if(mode == TaskMode.ACTION) {
+                    showProgressBar(false);
+                }
             }
 
             private void showResults(List<CopyTaskResult> successfullyResults, List<TaskException> exceptions) {
@@ -112,11 +125,14 @@ public class CopyHandler extends AbstractActionHandler<ActionEvent> {
             @Override
             public void doFailed(TaskException taskException) {
                 messageArea.appendText(taskException.getMessage());
+                if(mode == TaskMode.ACTION) {
+                    showProgressBar(false);
+                }
             }
         };
     }
 
-    private TaskListener<CopyTaskResult> createCopyFileSubTaskListener(TextArea messageArea) {
+    private TaskListener<CopyTaskResult> createCopyFileSubTaskListener() {
         return new TaskListener<CopyTaskResult>() {
 
             @Override
@@ -146,6 +162,30 @@ public class CopyHandler extends AbstractActionHandler<ActionEvent> {
             @Override
             public void doFailed(TaskException taskException) {
                 messageArea.appendText(taskException.getMessage());
+                if(mode == TaskMode.ACTION) {
+                    showProgressBar(false);
+                }
+            }
+        };
+    }
+
+    private ProgressListener<Long> createProgressListener() {
+        return new ProgressListener<Long>() {
+
+            private Long progressEnd = 0L;
+            private Long progressSum = 0L;
+
+            @Override
+            public void saveProgressEnd(Long progressEnd) {
+                Platform.runLater(() -> this.progressEnd = progressEnd);
+            }
+
+            @Override
+            public void updateProgress(Long progress) {
+                Platform.runLater(() -> {
+                    progressSum += progress;
+                    progressBar.setProgress(progressSum / (double) progressEnd);
+                });
             }
         };
     }
@@ -156,5 +196,14 @@ public class CopyHandler extends AbstractActionHandler<ActionEvent> {
 
     public void enableValidationMode() {
         mode = TaskMode.VALIDATION;
+    }
+
+    private void showProgressBar(boolean enable) {
+        copyButton.setVisible(!enable);
+        validButton.setVisible(!enable);
+        progressBar.setVisible(enable);
+        if(!enable) {
+            progressBar.setProgress(0);
+        }
     }
 }

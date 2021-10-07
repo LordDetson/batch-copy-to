@@ -25,5 +25,5 @@ public abstract class AbstractActionHandler<T extends Event> implements ActionHa
         listeners.forEach(ActionListener::finish);
     }
 
-    abstract void body();
+    public abstract void body();
 }

@@ -19,7 +19,7 @@ public class FileSelectionHandler extends AbstractActionHandler<ActionEvent> {
     }
 
     @Override
-    void body() {
+    public void body() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().add(new ExtensionFilter("Text File", "*.txt"));
         File file = fileChooser.showOpenDialog(pathField.getScene().getWindow());

@@ -3,6 +3,7 @@ package by.babanin.batchcopy.application;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 import by.babanin.batchcopy.application.exception.TaskException;
@@ -12,6 +13,7 @@ public class CopyFileTask extends ValidatebleTask<CopyTaskResult> {
 
     private final Path sourceFile;
     private final Path targetFile;
+    private final List<ProgressListener<Long>> progressListeners = new ArrayList<>();
 
     public CopyFileTask(Path sourceFile, Path targetFile) {
         super("file copy task");
@@ -44,6 +46,8 @@ public class CopyFileTask extends ValidatebleTask<CopyTaskResult> {
             try {
                 createParentDirectoryIfNotExist();
                 Files.copy(sourceFile, targetFile);
+                result.getFileSize().ifPresent(
+                        fileSize -> progressListeners.forEach(listener -> listener.updateProgress(fileSize)));
             }
             catch(IOException e) {
                 result.setException(new TaskException(e));
@@ -57,5 +61,17 @@ public class CopyFileTask extends ValidatebleTask<CopyTaskResult> {
         if(!Files.exists(parentTargetDirectory)) {
             Files.createDirectories(parentTargetDirectory);
         }
+    }
+
+    public void addProgressListener(ProgressListener<Long> listener) {
+        progressListeners.add(listener);
+    }
+
+    public void removeProgressListener(ProgressListener<Long> listener) {
+        progressListeners.remove(listener);
+    }
+
+    public void removeAllProgressListeners() {
+        progressListeners.clear();
     }
 }

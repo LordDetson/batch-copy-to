@@ -18,7 +18,7 @@ public class DirectorySelectionHandler extends AbstractActionHandler<ActionEvent
     }
 
     @Override
-    void body() {
+    public void body() {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         File file = directoryChooser.showDialog(pathField.getScene().getWindow());
         if(file != null) {

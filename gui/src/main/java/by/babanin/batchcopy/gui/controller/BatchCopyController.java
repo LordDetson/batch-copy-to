@@ -104,7 +104,8 @@ public class BatchCopyController {
     }
 
     private CopyHandler createCopyHandler() {
-        return new CopyHandler(chooseSourceDirectoryField, chooseTargetDirectoryField, chooseFileListField, messageArea, progressBar);
+        return new CopyHandler(chooseSourceDirectoryField, chooseTargetDirectoryField, chooseFileListField, messageArea, progressBar,
+                copyButton, validButton);
     }
 
     private ListChangeListener<? super String> createValidationListener() {
