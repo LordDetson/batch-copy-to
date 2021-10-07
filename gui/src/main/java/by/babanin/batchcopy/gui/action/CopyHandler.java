@@ -15,8 +15,9 @@ import by.babanin.batchcopy.application.exception.TaskException;
 import by.babanin.batchcopy.domain.Configuration;
 import by.babanin.batchcopy.gui.component.DirectorySelectionField;
 import by.babanin.batchcopy.gui.component.FileSelectionField;
+import by.babanin.batchcopy.gui.concurrent.ProgressConcurrentListener;
+import by.babanin.batchcopy.gui.concurrent.TaskConcurrentListener;
 import by.babanin.batchcopy.gui.concurrent.TaskManager;
-import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
 import javafx.scene.control.ProgressBar;
@@ -61,10 +62,10 @@ public class CopyHandler extends AbstractActionHandler<ActionEvent> {
     }
 
     private TaskListener<List<CopyTaskResult>> createCopyFilesTaskListener() {
-        return new TaskListener<List<CopyTaskResult>>() {
+        return new TaskConcurrentListener<List<CopyTaskResult>>() {
 
             @Override
-            public void doBefore() {
+            public void before() {
                 if(mode == TaskMode.ACTION) {
                     showProgressBar(true);
                 }
@@ -87,7 +88,7 @@ public class CopyHandler extends AbstractActionHandler<ActionEvent> {
             }
 
             @Override
-            public void doAfter(List<CopyTaskResult> results) {
+            public void after(List<CopyTaskResult> results) {
                 List<CopyTaskResult> successfullyResults = new ArrayList<>(results);
                 List<TaskException> exceptions = results.stream()
                         .filter(result -> result.getException().isPresent())
@@ -123,7 +124,7 @@ public class CopyHandler extends AbstractActionHandler<ActionEvent> {
             }
 
             @Override
-            public void doFailed(TaskException taskException) {
+            public void failed(TaskException taskException) {
                 messageArea.appendText(taskException.getMessage());
                 if(mode == TaskMode.ACTION) {
                     showProgressBar(false);
@@ -133,15 +134,15 @@ public class CopyHandler extends AbstractActionHandler<ActionEvent> {
     }
 
     private TaskListener<CopyTaskResult> createCopyFileSubTaskListener() {
-        return new TaskListener<CopyTaskResult>() {
+        return new TaskConcurrentListener<CopyTaskResult>() {
 
             @Override
-            public void doBefore() {
+            public void before() {
                 // do nothing
             }
 
             @Override
-            public void doAfter(CopyTaskResult result) {
+            public void after(CopyTaskResult result) {
                 StringBuilder builder = new StringBuilder();
                 Path targetFile = result.getTargetFile();
                 Path sourceFile = result.getSourceFile();
@@ -160,7 +161,7 @@ public class CopyHandler extends AbstractActionHandler<ActionEvent> {
             }
 
             @Override
-            public void doFailed(TaskException taskException) {
+            public void failed(TaskException taskException) {
                 messageArea.appendText(taskException.getMessage());
                 if(mode == TaskMode.ACTION) {
                     showProgressBar(false);
@@ -170,22 +171,20 @@ public class CopyHandler extends AbstractActionHandler<ActionEvent> {
     }
 
     private ProgressListener<Long> createProgressListener() {
-        return new ProgressListener<Long>() {
+        return new ProgressConcurrentListener<Long>() {
 
             private Long progressEnd = 0L;
             private Long progressSum = 0L;
 
             @Override
-            public void saveProgressEnd(Long progressEnd) {
-                Platform.runLater(() -> this.progressEnd = progressEnd);
+            public void storeProgressEnd(Long progressEnd) {
+                this.progressEnd = progressEnd;
             }
 
             @Override
-            public void updateProgress(Long progress) {
-                Platform.runLater(() -> {
-                    progressSum += progress;
-                    progressBar.setProgress(progressSum / (double) progressEnd);
-                });
+            public void applyProgress(Long progress) {
+                progressSum += progress;
+                progressBar.setProgress(progressSum / (double) progressEnd);
             }
         };
     }
