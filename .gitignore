@@ -31,3 +31,4 @@ hs_err_pid*
 /application/target
 /domain/target
 /gui/target
+/console/target

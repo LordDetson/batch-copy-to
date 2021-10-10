@@ -10,4 +10,3 @@ Steps:
 
 Future improvements:
 * Add text style to the message area. (in progress)
-* Implement console tool
